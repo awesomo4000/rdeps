@@ -1,6 +1,6 @@
 # rdeps
 
-Find dependencies in ELF objects, recursively even.
+Find dependencies in ELF objects, recursively if requested.
 
 Simple output in normal mode, JSON output in recursive mode.
 
@@ -19,7 +19,7 @@ RDEPS_PATH : colon-delimited directories to search (-r for recursive) for
 ```
 ### Examples
 
-#### Without -r (recurse)*
+#### Without -r 
 ```sh
 $ ./rdeps.py /bin/ls
 /bin/ls libselinux.so.1
