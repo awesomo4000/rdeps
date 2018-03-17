@@ -1,5 +1,8 @@
 # rdeps
-Find ELF dependencies.
+
+Find dependencies in ELF objects, recursively even.
+
+Simple output in normal mode, JSON output in recursive mode.
 
 ### Usage:
 ```
