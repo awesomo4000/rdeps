@@ -45,16 +45,6 @@ def undelimit(s, delimiter=':'):
                 list(set(s.split(delimiter))))
 
 
-def find_file_in_dirs(filename, dirlist):
-  # Find all instances of filename present in dirlist
-  filelist = []
-
-  for d in dirlist:
-    print dirlist
-
-  return filelist
-
-
 def deps(filename):
   # Return list of dependencies for file
 
@@ -83,6 +73,7 @@ def find_file(filename, pathlist):
   #
   # find the first available file in pathlist matching filename
   #
+
   if os.path.exists(filename):
     return os.path.realpath(filename)
   
@@ -90,17 +81,15 @@ def find_file(filename, pathlist):
   for path in pathlist:
     for root, dirs, files in os.walk(path, topdown=False):
       if filename in files:
-        return os.path.join(root, filename)
+        return os.path.join(root, filename) # XXX:only returns first one
   return None
 
 def recurse_deps(filename, pathlist, dep_dict = {} ):
 
-  full_path_dict = dep_dict.setdefault(
-                     filename,
-                     { 'path' : find_file(filename, pathlist ) }
-                   )
+  path_dict = dep_dict.setdefault( filename,
+              { 'path' : find_file(filename, pathlist ) })
 
-  for f in deps(full_path_dict['path']):
+  for f in deps(path_dict['path']):
     curr_deps  = dep_dict[filename].setdefault('deps',[])
     if f in curr_deps:
       continue
@@ -123,7 +112,7 @@ if __name__ == "__main__":
 
   filelist = set(filter(lambda x: x != '-r', sys.argv[1:]))
 
-  for f in set(filelist):
+  for f in filelist:
     if DO_RECURSIVE:
       rpaths    = undelimit(os.environ.get("RDEPS_PATH")) 
       deps_dict = recurse_deps(f, rpaths)
