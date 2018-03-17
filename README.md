@@ -26,6 +26,20 @@ $ ./rdeps.py /bin/ls
 /bin/ls libacl.so.1
 /bin/ls libc.so.6
 ```
+Multiple ELF files:
+
+```sh
+$ ./rdeps.py /bin/ls /bin/cat /usr/bin/strings /usr/lib/libbfd-2.24-system.so /usr/lib/libz.so.1
+/bin/ls libselinux.so.1
+/bin/ls libacl.so.1
+/bin/ls libc.so.6
+/usr/bin/strings libbfd-2.24-system.so
+/usr/bin/strings libc.so.6
+/usr/lib/libbfd-2.24-system.so libdl.so.2
+/usr/lib/libbfd-2.24-system.so libc.so.6
+/usr/lib/libbfd-2.24-system.so libz.so.1
+/bin/cat libc.so.6
+```
 
 #### With -r (recurse) option
 
