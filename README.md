@@ -19,34 +19,45 @@ RDEPS_PATH : colon-delimited directories to search (-r for recursive) for
 ```
 ### Examples
 
-#### Without -r 
 ```sh
 $ ./rdeps.py /bin/ls
-/bin/ls libselinux.so.1
-/bin/ls libacl.so.1
-/bin/ls libc.so.6
+/bin/ls,/bin/ls
+libselinux.so.1
+libacl.so.1
+libc.so.6
 ```
-Multiple ELF files:
 
 ```sh
 $ ./rdeps.py /bin/ls /bin/cat /usr/bin/strings /usr/lib/libbfd-2.24-system.so /usr/lib/libz.so.1
-/bin/ls libselinux.so.1
-/bin/ls libacl.so.1
-/bin/ls libc.so.6
-/usr/bin/strings libbfd-2.24-system.so
-/usr/bin/strings libc.so.6
-/usr/lib/libbfd-2.24-system.so libdl.so.2
-/usr/lib/libbfd-2.24-system.so libc.so.6
-/usr/lib/libbfd-2.24-system.so libz.so.1
-/bin/cat libc.so.6
+libz.so.1
+libbfd-2.24-system.so
+/usr/bin/strings,/usr/bin/strings
+libselinux.so.1
+/usr/lib/libbfd-2.24-system.so,/usr/lib/libbfd-2.24-system.so
+/bin/ls,/bin/ls
+libacl.so.1
+/usr/lib/libz.so.1
+libdl.so.2
+/bin/cat,/bin/cat
+libc.so.6
 ```
 
-#### With -r (recurse) option
+```sh
+RDEPS_PATH=/lib:/usr/lib:/sbin/lib ./rdeps.py -r /bin/ls
+libattr.so.1,/lib/x86_64-linux-gnu/libattr.so.1
+/bin/ls,/bin/ls
+libselinux.so.1,/lib/x86_64-linux-gnu/libselinux.so.1
+libpcre.so.3,/lib/x86_64-linux-gnu/libpcre.so.3
+ld-linux-x86-64.so.2,/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2
+libacl.so.1,/lib/x86_64-linux-gnu/libacl.so.1
+libdl.so.2,/lib/x86_64-linux-gnu/libdl.so.2
+libc.so.6,/lib/x86_64-linux-gnu/libc.so.6
+```
 
-Search ':' delimited paths in environment variable `RDEPS_PATH` for absolute paths of dependencies, recursively do this for each dependency until are found. *Note*: no check for cycles is made, so this could run forever. Let your patience be your guide.
+#### JSON Output
 
 ```sh
-$ RDEPS_PATH=/lib:/usr/lib:/sbin/lib ./rdeps.py -r /bin/ls
+$ RDEPS_PATH=/lib:/usr/lib:/sbin/lib ./rdeps.py -r /bin/ls -j
 {
   "/bin/ls": {
     "deps": [
