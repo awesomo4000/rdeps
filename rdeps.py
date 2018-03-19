@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 """
-Usage: %s binary1 [ELF bin1] [ELF bin2] ...
+Usage: %s [-j] [-r] [ELF bin1] [ELF bin2] ...
 
 List dependencies for ELF files
 
