@@ -1,10 +1,11 @@
 #! /usr/bin/env python
 """
-Usage: %s [-r] [ELF bin1] [ELF bin2] ...
+Usage: %s binary1 [ELF bin1] [ELF bin2] ...
 
 List dependencies for ELF files
 
 -r : Recursively find dependencies, searching RDEPS_PATH
+-j : Output JSON
 
 ENVIRONMENT VARIABLES
 
@@ -18,6 +19,11 @@ import os.path
 import sys
 
 from elftools.elf.elffile import ELFFile
+
+try:  # py3
+  from shlex import quote
+except ImportError:  # py2
+  from pipes import quote
 
 def usage():
   sys.stdout.write(__doc__ % os.path.basename(sys.argv[0]))
@@ -84,20 +90,30 @@ def find_file(filename, pathlist):
         return os.path.join(root, filename) # XXX:only returns first one
   return None
 
-def recurse_deps(filename, pathlist, dep_dict = {} ):
+def get_dependencies(filename, pathlist=[], dep_dict = {}, recurse=False):
 
   path_dict = dep_dict.setdefault( filename,
               { 'path' : find_file(filename, pathlist ) })
 
   for f in deps(path_dict['path']):
     curr_deps  = dep_dict[filename].setdefault('deps',[])
-    if f in curr_deps:
-      continue
+
+    if f in curr_deps: continue
+
     curr_deps += [f] 
-    recurse_deps(f, pathlist, dep_dict)
+
+    if recurse:
+      get_dependencies(f, pathlist, dep_dict, recurse=True)
+    else:
+      dep_dict.setdefault(f, {'path' : find_file(f, pathlist),
+                              'deps' : [] } )
+
   return dep_dict
 
-#-----------------------------------------------------------
+def rm_opts(opt):
+  return opt not in ( '-r', '-j' )
+
+#-----------------------------------------------------------------------------
 
 if __name__ == "__main__":
 
@@ -105,18 +121,28 @@ if __name__ == "__main__":
     usage()
     sys.exit(0)
 
-  DO_RECURSIVE = False
+  opt_recurse, opt_json = False, False
 
-  if '-r' in sys.argv[1:]:
-    DO_RECURSIVE = True
+  if '-r' in sys.argv[1:]: opt_recurse = True
+  if '-j' in sys.argv[1:]: opt_json = True
 
-  filelist = set(filter(lambda x: x != '-r', sys.argv[1:]))
+  filelist = set(filter(rm_opts, sys.argv[1:]))
 
-  for f in filelist:
-    if DO_RECURSIVE:
-      rpaths    = undelimit(os.environ.get("RDEPS_PATH")) 
-      deps_dict = recurse_deps(f, rpaths)
-      print json.dumps(deps_dict, indent=2, sort_keys=True)
-    else:
-      for d in deps(f):
-        print f,d
+  pathlist = undelimit(os.environ.get("RDEPS_PATH"))
+
+  dep_dict = {} 
+
+  for filename in filelist:
+    dep_dict = get_dependencies(filename, pathlist, dep_dict,
+                                recurse=opt_recurse)
+
+  if opt_json:
+    sys.stdout.write(json.dumps(dep_dict, indent=2, sort_keys=True))
+
+  else:
+    for k,v in dep_dict.items():
+      out = quote(k)
+      if v['path']:
+        out += ',' + quote(v['path'])
+      out += '\n'
+      sys.stdout.write(out)
