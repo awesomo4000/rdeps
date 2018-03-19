@@ -2,7 +2,7 @@
 
 Find dependencies in ELF objects, recursively if requested.
 
-Simple output in normal mode, JSON output in recursive mode.
+Output is comma-delimited lines, or JSON
 
 ### Usage:
 ```
